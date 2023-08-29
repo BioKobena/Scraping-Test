@@ -2,6 +2,9 @@
 import requests as r
 from bs4 import BeautifulSoup
 from dataclasses import dataclass
+# from tabulate import Table
+# import tabulate
+from tabulate import tabulate
 
 @dataclass
 class Stock:
@@ -66,6 +69,30 @@ def get_price_information(ticker, exchange):
         "usd_price": usd_price 
     }
 
+def display_portfolio_summary(portfolio):
+    if not isinstance(portfolio, Portfolio):
+        raise TypeError("Please provide an instance of the Porfolio type")
+    
+    portfolio_value = portfolio.get_total_value()
+    position_data = []
+    
+    for position in portfolio.positions:
+        position_data.append(
+            [position.stock.ticker,
+             position.stock.exchange, 
+             position.quantity,
+             position.stock.usd_price, 
+             position.quantity * position.stock.usd_price,
+             position.quantity * position.stock.usd_price /portfolio_value * 100
+         ]
+        )
+    print(tabulate(position_data, 
+                   headers=["Ticker", "Exchange", "Quantity", "Price", "Market Value", "% Allocation"],
+                   tablefmt="psql",
+                   floatfmt=".2f",
+               ))
+    
+    print(f"Total portfolio value : {portfolio_value:,.2f}.")
 if __name__ == "__main__":
     # print(get_price_information("MSFT", "NASDAQ"))
     # print(get_fx_to_usd("EUR"))
@@ -75,4 +102,5 @@ if __name__ == "__main__":
     msft = Stock("MSFT","NASDAQ")
     googl = Stock("GOOGL","NASDAQ")
     portfolio = Portfolio([Position(shop, 10), Position(msft, 2), Position(googl, 30)])
-    print(portfolio.get_total_value())
+    # print(portfolio.get_total_value())
+    display_portfolio_summary(portfolio)
